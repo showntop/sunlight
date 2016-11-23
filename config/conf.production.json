@@ -1,0 +1,28 @@
+{
+	"host":{
+		
+	},
+	"dbstr":"postgres://ynazkzqhiihmle:sLlrp2_gLeJCoGYvVXt3Ts1jNY@ec2-54-243-201-19.compute-1.amazonaws.com:5432/dbl153jnanfv0h",
+	"database":{
+		"addr":     "ec2-54-243-201-19.compute-1.amazonaws.com:5432",
+		"user":     "ynazkzqhiihmle",
+		"password": "sLlrp2_gLeJCoGYvVXt3Ts1jNY",
+		"dbname":   "dbl153jnanfv0h"
+	},
+	"redis": {
+        "addr": ["",""],
+        "passwd": "",
+        "poolsize": 10,
+        "idletimeout": 300,
+        "dialtimeout": 10,
+        "readtimeout": 5,
+        "writetimeout": 10
+    },
+	"default_locale": "zh-cn",
+	"log_level": 5,
+	"env": "develop",
+	"log_path":"./logs/develop.log",
+    "tmpl_path": "./views",
+    "i18n_path": "",
+	"server_port": ":7007"
+}
