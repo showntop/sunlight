@@ -1,8 +1,9 @@
 package models
 
 import (
+	"reflect"
+	"strconv"
 	"strings"
-	// "errors"
 	// "regexp"
 	"database/sql"
 	// "fmt"
@@ -19,6 +20,7 @@ type User struct {
 	Mobile         string `json:"mobile"`
 	Password       string `json:"password" sql:"-"`
 	HashedPassword string `json:"password" sql:"hashed_password"`
+	Token          string `json:"token" sql:"-"`
 }
 
 func (u *User) Validate() error {
@@ -78,4 +80,30 @@ func GetUserBy(fvalue string) (*User, error) {
 	}
 	user.Id = id
 	return user, err
+}
+
+func UpdateUserProfile(userId int64, updateInfo map[string]interface{}) error {
+	//allowed update attribute\
+	var fields []string
+	var values []string
+	fields = append(fields, "user_id")
+	values = append(values, strconv.FormatInt(userId, 10))
+	var updateSubSQL []string
+	for field, value := range updateInfo {
+		fields = append(fields, field)
+		if reflect.TypeOf(value).Kind() == reflect.String {
+			updateSubSQL = append(updateSubSQL, field+"="+value.(string))
+			values = append(values, value.(string))
+		}
+		if reflect.TypeOf(value).Kind() == reflect.Int {
+			updateSubSQL = append(updateSubSQL, field+"="+strconv.Itoa(value.(int)))
+			values = append(values, strconv.Itoa(value.(int)))
+		}
+	}
+	fieldStr := strings.Join(fields, ",")
+	valueStr := strings.Join(values, ",")
+	updateSubSQLStr := strings.Join(updateSubSQL, ",")
+	_, err := StoreM.Master.Exec(`INSERT INTO user_profiles ($1) VALUES ($2) ON CONFLICT ON CONSTRAINT user_profiles_user_id_fkey DO 
+						UPDATE SET $3 `, fieldStr, valueStr, updateSubSQLStr)
+	return err
 }

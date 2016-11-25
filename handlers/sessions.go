@@ -37,7 +37,7 @@ func (s *Sessions) Create(req *http.Request) ([]byte, *HttpError) {
 		log.Warnln("session auth user,", err)
 		return nil, IncorrectAccountErr
 	}
-
+	user.Token = models.CreateTokenFor(user)
 	//respose do
 	output, err := json.Marshal(WrapRespData(user))
 	if err != nil {

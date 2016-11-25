@@ -37,6 +37,18 @@ func Instrument() *httprouter.Router {
 		rw.Write(results)
 	})
 
+	router.PATCH("/api/v1/users", func(rw http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		rw.Header().Set("Content-Type", "application/json")
+		usersC := new(handlers.Users)
+		results, err := usersC.Update(req)
+		if err != nil {
+			http.Error(rw, err.Error(), err.Code)
+			// rw.Write(WrapErrorResp(err))
+			return
+		}
+		rw.Write(results)
+	})
+
 	router.POST("/api/v1/sessions", func(rw http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		rw.Header().Set("Content-Type", "application/json")
 		sessionsC := new(handlers.Sessions)

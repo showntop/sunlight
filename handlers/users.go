@@ -10,6 +10,7 @@ import (
 )
 
 type Users struct {
+	application
 }
 
 func (u *Users) Create(req *http.Request) ([]byte, *HttpError) {
@@ -53,4 +54,25 @@ func (u *Users) Create(req *http.Request) ([]byte, *HttpError) {
 		return output, BadRespErr
 	}
 	return output, nil
+}
+
+func (u *Users) Update(req *http.Request) ([]byte, *HttpError) {
+	user, err := u.AuthUser(req)
+	if err != nil {
+		return nil, IncorrectAccountErr
+	}
+	u.CurrentUser = user
+	var updateInfo map[string]interface{}
+	decoder := json.NewDecoder(req.Body)
+	err = decoder.Decode(&updateInfo)
+	if err != nil {
+		return nil, BadRequestErr
+	}
+
+	err = models.UpdateUserProfile(u.CurrentUser.Id, updateInfo)
+	if err != nil {
+		log.Error("server error:", err)
+		return nil, DBErr
+	}
+	return []byte("update success"), nil
 }
