@@ -13,18 +13,18 @@ type Sessions struct {
 }
 
 func (s *Sessions) Create(req *http.Request) ([]byte, *HttpError) {
-	lgoinInfo := &struct {
-		Username string `json:"username"`
+	loginInfo := &struct {
+		Mobile   string `json:"mobile"`
 		Password string `json:"password"`
 	}{}
 	decoder := json.NewDecoder(req.Body)
-	err := decoder.Decode(&lgoinInfo)
+	err := decoder.Decode(&loginInfo)
 	if err != nil {
 		log.Warnln("session parse request,", err)
 		return nil, BadRequestErr
 	}
 
-	user, err := models.GetUserBy(lgoinInfo.Username)
+	user, err := models.GetUserBy(loginInfo.Mobile)
 	if err != nil {
 		log.Errorln("session query database,", err)
 		return nil, DBErr
@@ -32,7 +32,7 @@ func (s *Sessions) Create(req *http.Request) ([]byte, *HttpError) {
 	if user == nil {
 		return nil, IncorrectAccountErr
 	}
-	user.Password = lgoinInfo.Password
+	user.Password = loginInfo.Password
 	if err := user.Authenticate(); err != nil {
 		log.Warnln("session auth user,", err)
 		return nil, IncorrectAccountErr

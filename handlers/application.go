@@ -16,8 +16,8 @@ func (h *HttpError) Error() string {
 
 var (
 	BadRequestErr       = &HttpError{400, "json format error"}
-	BadRequestErr2      = &HttpError{401, "invalid query key/value pair"}
-	IncorrectAccountErr = &HttpError{402, "用户名或者密码错误"}
+	BadRequestErr2      = &HttpError{422, "invalid query key/value pair"}
+	IncorrectAccountErr = &HttpError{403, "用户名或者密码错误"}
 
 	ServerErr  = &HttpError{500, "server error"}
 	DBErr      = &HttpError{503, "db error"}

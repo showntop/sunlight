@@ -1,9 +1,12 @@
 package models
 
 import (
-	// "strings"
+	"strings"
 	// "errors"
 	// "regexp"
+	"database/sql"
+	// "fmt"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -41,13 +44,38 @@ func (u *User) EncryptPassword() error {
 }
 
 func (u *User) Authenticate() error {
+	// fmt.Printf("\n %s-%s \n", u.HashedPassword, u.Password)
 	return bcrypt.CompareHashAndPassword([]byte(u.HashedPassword), []byte(u.Password))
 }
 
 func CreateUser(u *User) error {
+	u.CreatedAt, u.UpdatedAt = time.Now(), time.Now()
+	u.Username = "u" + u.Mobile
+	var id int64
+	err := StoreM.Master.QueryRow("INSERT INTO users(email,mobile,username,hashed_password,created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6) RETURNING id", u.Email, u.Mobile, u.Username, u.HashedPassword, u.CreatedAt, u.UpdatedAt).Scan(&id)
+	if err != nil {
+		return err
+	}
+	u.Id = id
 	return nil
 }
 
 func GetUserBy(fvalue string) (*User, error) {
-	return nil, nil
+	var err error
+	var id int64
+	var username, name, email, mobile, hashedPassword sql.NullString
+	if strings.Contains(fvalue, "@") { //email
+		return nil, nil
+	} else { //mobile
+		err = StoreM.Master.QueryRow("SELECT id, username, name, email, mobile, hashed_password FROM users WHERE mobile = $1", fvalue).Scan(&id, &username, &name, &email, &mobile, &hashedPassword)
+	}
+	user := &User{
+		Username:       username.String,
+		Name:           name.String,
+		Mobile:         mobile.String,
+		Email:          email.String,
+		HashedPassword: hashedPassword.String,
+	}
+	user.Id = id
+	return user, err
 }
