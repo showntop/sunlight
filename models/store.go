@@ -1,20 +1,19 @@
 package models
 
 import (
-	// "fmt"
-	"database/sql"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/golang/groupcache/lru"
-	_ "github.com/lib/pq"
 
 	. "github.com/showntop/sunlight/config"
 )
 
 type Store struct {
 	Cache    *lru.Cache
-	Master   *sql.DB   //*sqlx.DB
-	Replicas []*sql.DB //*sqlx.DB
+	Master   *sqlx.DB   //*sqlx.DB
+	Replicas []*sqlx.DB //*sqlx.DB
 }
 
 var (
@@ -25,7 +24,8 @@ func SetupStorage() {
 	log.WithField("server", "starting").Info("init storage...")
 	StoreM = &Store{}
 
-	db, err := sql.Open("postgres", Config.Dbstr)
+	db, err := sqlx.Connect("postgres", Config.Dbstr)
+	//sql.Open("postgres", Config.Dbstr)
 	if err != nil {
 		log.Fatal(err)
 	}

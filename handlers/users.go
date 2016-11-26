@@ -13,13 +13,27 @@ type Users struct {
 	application
 }
 
+func (u *Users) Show(req *http.Request) ([]byte, *HttpError) {
+	user, err := models.RetriveUserFromToken(req.Header.Get("Sun-Token"))
+	if err != nil {
+		return nil, AuthErr
+	}
+
+	user.Token = req.Header.Get("Sun-Token")
+	output, err := json.Marshal(WrapRespData(user))
+	if err != nil {
+		return output, BadRespErr
+	}
+	return output, nil
+}
+
 func (u *Users) Create(req *http.Request) ([]byte, *HttpError) {
 	//request do
 	signupInfo := &struct {
-		Username string `json:"username"`
+		Username string `json:"username,omitempty"`
+		Email    string `json:"email,omitempty"`
+		Mobile   string `json:"mobile,omitempty"`
 		Password string `json:"password"`
-		Email    string `json:"email"`
-		Mobile   string `json:"mobile"`
 	}{}
 	decoder := json.NewDecoder(req.Body)
 	err := decoder.Decode(&signupInfo)
@@ -47,7 +61,7 @@ func (u *Users) Create(req *http.Request) ([]byte, *HttpError) {
 		log.Error("server error:", err)
 		return nil, DBErr
 	}
-
+	user.Token = models.CreateTokenFor(user)
 	//respose do
 	output, err := json.Marshal(WrapRespData(user))
 	if err != nil {
@@ -74,5 +88,11 @@ func (u *Users) Update(req *http.Request) ([]byte, *HttpError) {
 		log.Error("server error:", err)
 		return nil, DBErr
 	}
-	return []byte("update success"), nil
+	output, err := json.Marshal(WrapRespData(map[string]interface{}{
+		"message": "update success",
+	}))
+	if err != nil {
+		return output, BadRespErr
+	}
+	return output, nil
 }

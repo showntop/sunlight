@@ -9,28 +9,40 @@ import (
 	"github.com/showntop/sunlight/handlers"
 )
 
-func WrapErrorResp(err *handlers.HttpError) []byte {
+func WrapErrorResp(err *handlers.HttpError) string {
 	output := []byte(`{
 		"message": "response json error",
-		"state_code": 503
+		"status": 503
 		}`)
 	output, _ = json.Marshal(map[string]interface{}{
-		"state_code": err.Code,
-		"message":    err.Message,
+		"status":  err.Code,
+		"message": err.Message,
 	})
 
-	return output
+	return string(output)
 }
 
 func Instrument() *httprouter.Router {
 	router := httprouter.New()
+
+	router.GET("/api/v1/users", func(rw http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		rw.Header().Set("Content-Type", "application/json")
+		usersC := new(handlers.Users)
+		results, err := usersC.Show(req)
+		if err != nil {
+			http.Error(rw, WrapErrorResp(err), err.Code)
+			// rw.Write(WrapErrorResp(err))
+			return
+		}
+		rw.Write(results)
+	})
 
 	router.POST("/api/v1/users", func(rw http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		rw.Header().Set("Content-Type", "application/json")
 		usersC := new(handlers.Users)
 		results, err := usersC.Create(req)
 		if err != nil {
-			http.Error(rw, err.Error(), err.Code)
+			http.Error(rw, WrapErrorResp(err), err.Code)
 			// rw.Write(WrapErrorResp(err))
 			return
 		}
@@ -42,7 +54,7 @@ func Instrument() *httprouter.Router {
 		usersC := new(handlers.Users)
 		results, err := usersC.Update(req)
 		if err != nil {
-			http.Error(rw, err.Error(), err.Code)
+			http.Error(rw, WrapErrorResp(err), err.Code)
 			// rw.Write(WrapErrorResp(err))
 			return
 		}
@@ -54,7 +66,7 @@ func Instrument() *httprouter.Router {
 		sessionsC := new(handlers.Sessions)
 		results, err := sessionsC.Create(req)
 		if err != nil {
-			http.Error(rw, err.Error(), err.Code)
+			http.Error(rw, WrapErrorResp(err), err.Code)
 			// rw.Write(WrapErrorResp(err))
 			return
 		}

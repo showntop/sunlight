@@ -18,3 +18,12 @@ func CreateTokenFor(user *User) string {
 	StoreM.Cache.Add(fmt.Sprintf("%s%s", KEY_NAMESPACE, token), *user)
 	return token
 }
+
+func RetriveUserFromToken(token string) (*User, error) {
+	value, ok := StoreM.Cache.Get(fmt.Sprintf("%s%s", KEY_NAMESPACE, token))
+	if !ok {
+		return nil, fmt.Errorf("unrecgonized toke %s", token)
+	}
+	user := value.(User)
+	return &user, nil
+}
