@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	// "regexp"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -87,7 +88,9 @@ func GetUserBy(fvalue string) (*User, error) {
 	} else { //mobile
 		err = StoreM.Master.Get(user, "SELECT users.id, users.username, COALESCE(users.email, '') as email, users.mobile, users.hashed_password, COALESCE(user_profiles.nickname, '') AS nickname, COALESCE(user_profiles.avatar, '') AS avatar, COALESCE(user_profiles.description, '') AS description FROM users LEFT JOIN user_profiles on users.id = user_profiles.user_id WHERE mobile = $1", fvalue)
 	}
-
+	if sql.ErrNoRows == err {
+		return nil, nil
+	}
 	return user, err
 }
 
