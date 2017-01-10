@@ -77,6 +77,9 @@ func main() {
 	// ms.AddBeforeFilter(Filter(handlers.AuthUser))
 	mux := ms.mmux
 	mux.Handle("/", routes.Instrument())
+	if port:=os.Getenv("PORT"); port != ""{
+	  Config.ServerPort = port
+	}
 	log.WithField("time", time.Now()).Infof("starting in development on %s", Config.ServerPort)
 	log.Fatal(http.ListenAndServe(Config.ServerPort, ms))
 }
